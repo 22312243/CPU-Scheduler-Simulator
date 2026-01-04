@@ -127,7 +127,7 @@ int readInput(const char* fileName, Queue** queueHead){
     char ch;
 
     while(file >> ch)
-    {
+    { 
         /*execTime*/
         execTime= 0;
         while(ch!= ':'&& file){
@@ -168,6 +168,52 @@ return 1;
     
 }
 
+// First Come First Serve scheduling
+void fcfsSchedule(Queue* q, ofstream& outFile)
+{
+    int currTime=0; //keeping track of CPU time 
+    Node* cur = q->headProcNode; //start with the first process in the queue
+    double totalWait=0;  //sum of all waiting times
+    int processCounter=0;  // number of processes
+
+    outFile <<q->queueId<<":1";
+    cout <<q->queueId<<":1";
+
+// go through each process in the queue
+    while(cur != NULL)
+    {
+        // if CPU is idle, jump to the arrival time of this process
+        if(currTime < cur->procData.arrival){
+            currTime = cur->procData.arrival;
+        }
+       //waiting time = time when CPU starts - arrival time
+    int waitTime = currTime - cur->procData.arrival;
+    //write waiting time to file and screen 
+    outFile << ":"<<waitTime;
+    cout << ":"<< waitTime;
+
+    //update totals
+    totalWait += waitTime;
+    processCounter++;
+
+    currTime += cur->procData.execTime;
+    //go to next process
+    cur = cur->nextNode;
+}
+  //average waiting time
+  double averageWait;
+  if(processCounter ==0){
+    averageWait = 0.0;
+  }else{
+    averageWait = totalWait / processCounter;
+  }
+
+  outFile << ":"<<averageWait<<"\n";
+  cout << ":"<<averageWait<<"\n";
+
+}
+
+
 int main(int argc, char *argv[])
 {
     if(argc != 3){
@@ -178,10 +224,23 @@ int main(int argc, char *argv[])
     Queue* allQueues = nullptr;
     if(!readInput(argv[1], &allQueues))
     return 1;
+
    for (Queue* q = allQueues; q; q = q->nextQueue){
-    cout<<"Queue "<< q->queueId <<"has"<<count(q->headProcNode)<<" jobs/n";
+    cout<<"Queue "<< q->queueId <<"has"<<count(q->headProcNode)<<" jobs\n";
    
    }
+   ofstream outFile(argv[2]);
+   if(!outFile){
+    cout<<"could not open the output file."<< endl;
+    return 1;
+   }
+   //run FCFS scheduling for each queue
+   Queue* q = allQueues;
+   while(q != NULL){
+    fcfsSchedule(q, outFile);
+    q = q->nextQueue;
+   }
+   //free memory
 Queue* curQueue = allQueues;
 while(curQueue != nullptr){
     freeAll(curQueue->headProcNode);
@@ -189,6 +248,6 @@ while(curQueue != nullptr){
     curQueue = curQueue->nextQueue;
     delete tmpQueue;
 }
-return 0;
+return 0; 
   
 }
