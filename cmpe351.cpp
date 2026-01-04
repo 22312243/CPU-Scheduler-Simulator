@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <cstdlib>
+#include <climits>
 using namespace std;
 
 //Process structure 
@@ -169,7 +170,7 @@ return 1;
 }
 
 // First Come First Serve scheduling
-void fcfsSchedule(Queue* q, ofstream& outFile)
+void fcfs(Queue* q, ofstream& outFile)
 {
     int currTime=0; //keeping track of CPU time 
     Node* cur = q->headProcNode; //start with the first process in the queue
@@ -212,7 +213,72 @@ void fcfsSchedule(Queue* q, ofstream& outFile)
   cout << ":"<<averageWait<<"\n";
 
 }
+void resetFlags(Node* head){
+    for (Node* n = head; n; n = n->nextNode) {
+        n->isDone = 0;
+    }
+}
 
+void sjf(Queue* q, ofstream& outFile){
+    int time = 0;
+    int doneJobs = 0;
+    int totalJobs = count(q->headProcNode);
+    double totalWait = 0;
+    
+    // queue id (2 = SJF)
+    outFile << q->queueId << ":2";
+    cout << q->queueId << ":2";
+
+    //keep going until all jobs are done
+    while(doneJobs < totalJobs)
+    {
+        Node* shortest =NULL; 
+        // look through all jobs to find the shortest one that has arrived
+        Node* cur = q->headProcNode;
+        while(cur != NULL){
+            if(cur->isDone == 0 && cur->procData.arrival <= time){
+                if(shortest == NULL || cur->procData.execTime < shortest->procData.execTime){
+                    shortest = cur;
+                }
+            }
+            cur = cur->nextNode;
+        }
+        // if no job is ready yet move forward to the next arrival
+        if(shortest == NULL){
+            int nextArrival = INT_MAX;
+            cur = q->headProcNode;
+            while(cur != NULL){
+                if(cur->isDone == 0 && cur->procData.arrival < nextArrival){
+                    nextArrival = cur->procData.arrival;
+                }
+                cur = cur->nextNode;
+            }
+            time = nextArrival;
+            continue;
+        }
+        //waiting time=current time - arrival time
+        int waitTime = time - shortest->procData.arrival;
+        outFile << ":" << waitTime;
+        cout << ":" << waitTime;
+
+        totalWait+=waitTime;
+        time+=shortest->procData.execTime;
+        shortest->isDone = 1;
+        doneJobs++;
+
+    }
+    
+        double averageWait;
+        if(totalJobs == 0){
+            averageWait = 0.0;
+        }else {
+            averageWait = totalWait/totalJobs;
+        }
+
+        outFile << ":" << averageWait <<"\n";
+        cout << ":" << averageWait <<"\n";
+
+}
 
 int main(int argc, char *argv[])
 {
@@ -234,10 +300,15 @@ int main(int argc, char *argv[])
     cout<<"could not open the output file."<< endl;
     return 1;
    }
-   //run FCFS scheduling for each queue
+   //run FCFS and SJF scheduling for each queue
    Queue* q = allQueues;
    while(q != NULL){
-    fcfsSchedule(q, outFile);
+    fcfs(q, outFile);
+
+    resetFlags(q->headProcNode);
+
+    sjf(q, outFile);
+
     q = q->nextQueue;
    }
    //free memory
