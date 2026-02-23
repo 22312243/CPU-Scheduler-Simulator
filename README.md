@@ -1,12 +1,30 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/fE641swc)
 # CPU Scheduler Simulator
-In this project, it is expected to develop a CPU scheduler application that simulates many
-different scheduling algorithms
-Inputs must be taken from text file with command arguments. And results also should be
-written to output file and screen.
 
-### To compile project
-`make all`
+A C++ console application that simulates classical CPU scheduling algorithms.
 
-### To Test the code
-`make test`
+### Overview
+The simulator reads process data from an input file, organizes processes into queues, and executes scheduling algorithms while calculating waiting times.
+
+### Algorithms Implemented
+- **FCFS** – First Come First Serve
+- **SJF** – Shortest Job First (Non-Preemptive)
+
+### Features
+- Supports multiple queues
+- Computes waiting time per process
+- Computes average waiting time per queue
+- Handles CPU idle time correctly
+- Dynamic memory management using linked lists
+
+### Process Structure
+Each process contains:
+- `procId` – Unique process ID (auto-generated)
+- `execTime` – Execution (burst) time
+- `priority` – Priority value (read but not used in scheduling)
+- `arrival` – Arrival time
+
+### Data Structures
+- Singly linked list for process storage
+- Linked list of queues
+- Dynamic memory allocation
+- Custom node structure tracking waiting time and completion flag
